@@ -3,7 +3,7 @@ function main
     showPrompt = 1;
      
     path = '/Users/rtyson/Documents/Collaborations/Matthias/DATA/';
-    avMicronsActin = 0.1;
+    avMicronsActin = 0.25;
     
     
     if(showPrompt)
