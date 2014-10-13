@@ -1,9 +1,9 @@
 function main
-    doPlot = 0;
-    showPrompt = 1;
+    doPlot = 1;
+    showPrompt = 0;
      
-    path = '/Users/rtyson/Documents/Collaborations/Matthias/DATA/';
-    avMicronsActin = 0.1;
+    path = 'C:/Users/rt/Documents/Matthais/DATA/';
+    avMicronsActin = 0.15;
     
     
     if(showPrompt)
@@ -15,6 +15,7 @@ function main
         if(avMicronsActin <= 0 || avMicronsActin > 1),avMicronsActin = 0.1; end
     end
    
+    hFig=figure(1);
     h = waitbar(0,'Reading in data...');
     
     % reads in cells
@@ -33,6 +34,8 @@ function main
     out(N_cells).centre = [];
     out(N_cells).frontPixels = [];
     out(N_cells).rearPixels = [];
+    
+    
     
     %cell masks
     for i = 1:N_cells,
@@ -65,36 +68,49 @@ function main
        saveTiff( o.frontMask.*255, [c.PATH, 'z_' ,c.name, '_frontMask' ]);
        saveTiff( o.rearMask.*255, [c.PATH, 'z_' ,c.name, '_rearMask' ]);
 
+       if(doPlot),
+           clf(hFig,'reset');
+           plotCell(i,o);
+           th=text(10,15, ['Cell ', num2str(i), ' (', c.name, ')']);
+           set(th, 'Color', [1,1,1]);
+           saveas(gca, [c.PATH, 'z_' ,c.name, '_plot.png' ], 'png'); 
+       end
        out(i) = o;
-
+    
     end
     
     dataPath = [cells(1).PATH, '../' ,'analysisData.mat'];
     waitbar(0.95,h,['Save: ', dataPath ]);
     
     save( dataPath, 'cells','out' ); 
+    waitfor(msgbox('FINISHED'));
     
     close(h);
+    close all;
     
-    msgbox('FINISHED');
+    fprintf('closing...\n');
     
-    if(doPlot),
-        figure(5);
-        o = out(1);
+end
+
+function plotCell(n,o)
+        
+        mask = double(o.frontMask);
+        mask(o.rearMask(:)~=0) = 2;
         hold off
-        imagesc(o.cellMask)
+        imagesc(mask);
         hold on
         plot( o.frontPixel(1), o.frontPixel(2)  , 'wx');
         plot( o.rearPixel(1), o.rearPixel(2)  , 'wo');
         plot( o.centreLine( 1:2), o.centreLine(3:4 ), 'w-'  );
-        plot( o.centre(1), o.centre(2)  , 'wo');
-    end
+        plot( o.centre(1), o.centre(2)  , 'ro');
+        axis off
+        axis equal
 end
 
 function writePixels(c, o)
     fileName = [c.PATH, 'z_' ,c.name, '_sectors.csv' ];
     
-    FID = fopen( fileName, 'w');
+    FID = fopen( fileName, 'wt');
     
     fprintf( FID, '');
     
@@ -174,7 +190,7 @@ function [front]=cellFront(s, microns)
     
     %figure(4)
     %hold off
-    %plot(profile, 'g');
+   % plot(profile, 'g');
     
     profile = [profile, profile, profile];
     
@@ -190,7 +206,7 @@ function [front]=cellFront(s, microns)
     profile = profile( (d+1):(d+d+1) );
     [~,i]=max(profile);
     
-    %hold on
+   % hold on
     %plot(profile, 'b')
     %plot( [i,i] , [0,255], 'r');
     
@@ -218,7 +234,7 @@ function rear = m_cellRear(s, front, line)
     outline = s.outlines{1};
     N = size(outline,1);
     
-    i_p = [2:N,1]; % i plus one index, circular
+    i_p = [2:N,1]'; % i plus one index, circular
     
     l1 = [ line(1), line(3),line(2), line(4)];
 
@@ -228,7 +244,7 @@ function rear = m_cellRear(s, front, line)
     
     for i = 1:N,
         
-       l2 =  [outline(i,2)', outline(i,3)' , outline(i_p,2)', outline(i_p,3)'];
+       l2 =  [outline(i,2)', outline(i,3)' , outline(i_p(i),2)', outline(i_p(i),3)'];
         
        [intersect, pI]= fastIntersectM( l1 , l2 );
        
