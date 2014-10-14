@@ -1,6 +1,6 @@
 function main
     doPlot = 1;
-    showPrompt = 0;
+    showPrompt = 1;
      
     path = 'C:/Users/rt/Documents/Matthais/DATA/';
     avMicronsActin = 0.15;
@@ -9,10 +9,10 @@ function main
     if(showPrompt)
         path = uigetdir(userpath, 'Folder with quimp data...'); 
         prompt = {'Entre proportion of outline for locating the front (0<x<=1)'};
-        def = {'0.1'};
+        def = {'0.15'};
         avMicronsActin = inputdlg(prompt,'Proportion of outline',1, def);
         avMicronsActin = str2num(avMicronsActin{1});  
-        if(avMicronsActin <= 0 || avMicronsActin > 1),avMicronsActin = 0.1; end
+        if(avMicronsActin <= 0 || avMicronsActin > 1),avMicronsActin = 0.15; end
     end
    
     hFig=figure(1);
@@ -38,7 +38,7 @@ function main
     
     
     %cell masks
-    for i = 1:N_cells,
+    for i = 2:N_cells,
        c = cells(i);
         
        waitbar(((i/N_cells)-0.05),h,['proccessing cell ',i,' (', c.name, ')']);
@@ -57,20 +57,19 @@ function main
        o.frontPixels(:,1) = m_getPixels( c, 1, o.frontMask);  
        o.frontPixels(:,2) = m_getPixels( c, 2, o.frontMask); 
        o.frontPixels(:,3) = m_getPixels( c, 3, o.frontMask);  
-   
        
        o.rearPixels = zeros( sum(o.rearMask(:))  ,3);
        o.rearPixels(:,1) = m_getPixels( c, 1, o.rearMask);  
        o.rearPixels(:,2) = m_getPixels( c, 2, o.rearMask);  
        o.rearPixels(:,3) = m_getPixels( c, 3, o.rearMask); 
-       
+   
        writePixels(c, o);
        saveTiff( o.frontMask.*255, [c.PATH, 'z_' ,c.name, '_frontMask' ]);
        saveTiff( o.rearMask.*255, [c.PATH, 'z_' ,c.name, '_rearMask' ]);
 
        if(doPlot),
            clf(hFig,'reset');
-           plotCell(i,o);
+           plotCell(o);
            th=text(10,15, ['Cell ', num2str(i), ' (', c.name, ')']);
            set(th, 'Color', [1,1,1]);
            saveas(gca, [c.PATH, 'z_' ,c.name, '_plot.png' ], 'png'); 
@@ -92,7 +91,7 @@ function main
     
 end
 
-function plotCell(n,o)
+function plotCell(o)
         
         mask = double(o.frontMask);
         mask(o.rearMask(:)~=0) = 2;
