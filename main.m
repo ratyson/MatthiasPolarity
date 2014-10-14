@@ -34,11 +34,9 @@ function main
     out(N_cells).centre = [];
     out(N_cells).frontPixels = [];
     out(N_cells).rearPixels = [];
-    
-    
-    
+      
     %cell masks
-    for i = 2:N_cells,
+    for i = 1:N_cells,
        c = cells(i);
         
        waitbar(((i/N_cells)-0.05),h,['proccessing cell ',i,' (', c.name, ')']);
@@ -387,7 +385,7 @@ function saveTiff( is, varargin )
         file = fullfile(pathname, filename);
     elseif(op == 1),
         file = varargin{1,1};
-    else,
+    else
         error('Too many arguments');
     end
     
