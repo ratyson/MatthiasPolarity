@@ -1,7 +1,9 @@
 function main
     doPlot = 1;
     showPrompt = 1;
-     
+    
+    fprintf('Version 2\n');
+    
     path = 'C:/Users/rt/Documents/Matthais/DATA/';
     avMicronsActin = 0.15;
     
