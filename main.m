@@ -7,10 +7,12 @@ function main
     
     
     if(showPrompt)
-        path = uigetdir(userpath, 'Folder with quimp data...'); 
+        path = uigetdir(userpath, 'Folder with quimp data...');
+        if(path==0), return; end
         prompt = {'Entre proportion of outline for locating the front (0<x<=1)'};
         def = {'0.15'};
         avMicronsActin = inputdlg(prompt,'Proportion of outline',1, def);
+        if(isempty(avMicronsActin)),  return; end    
         avMicronsActin = str2num(avMicronsActin{1});  
         if(avMicronsActin <= 0 || avMicronsActin > 1),avMicronsActin = 0.15; end
     end
@@ -39,7 +41,8 @@ function main
     for i = 1:N_cells,
        c = cells(i);
         
-       waitbar(((i/N_cells)-0.05),h,['proccessing cell ',i,' (', c.name, ')']);
+       nameText = strrep(['proccessing cell ',i,' (', c.name, ')'], '_', '\_');
+       waitbar(((i/N_cells)-0.05),h,nameText);
        
        
        o.avMicronsActin = avMicronsActin;
@@ -68,7 +71,8 @@ function main
        if(doPlot),
            clf(hFig,'reset');
            plotCell(o);
-           th=text(10,15, ['Cell ', num2str(i), ' (', c.name, ')']);
+           cellText = strrep(['Cell ', num2str(i), ' (', c.name, ')'], '_', '\_');
+           th=text(10,15, cellText);  
            set(th, 'Color', [1,1,1]);
            saveas(gca, [c.PATH, 'z_' ,c.name, '_plot.png' ], 'png'); 
        end
@@ -77,7 +81,10 @@ function main
     end
     
     dataPath = [cells(1).PATH, '../' ,'analysisData.mat'];
-    waitbar(0.95,h,['Save: ', dataPath ]);
+    
+    dataPathS = strrep(dataPath, '\', '\\');
+    dataPathS = strrep(dataPathS, '_', '\_');
+    waitbar(0.95,h,['Save:', dataPathS ]);
     
     save( dataPath, 'cells','out' ); 
     waitfor(msgbox('FINISHED'));
@@ -141,21 +148,21 @@ function pixels = m_getPixels( c, ch, mask)
     N = sum(mask(:)) ;
     
     if(ch==1),
-        if(c.FLUOCH1TIFF == '/'),
+        if( isempty(c.fluoCh1Map)),
             %fprintf('no ch1 data\n');
             pixels = zeros(N,1);
             return;
         end
         im = imread(c.FLUOCH1TIFF);
     elseif(ch==2)
-        if(c.FLUOCH2TIFF == '/'),
+        if( isempty(c.fluoCh2Map)),
             %fprintf('no ch2 data\n');
            pixels = zeros(N,1);
             return;
         end
         im = imread(c.FLUOCH2TIFF);
     else
-        if(c.FLUOCH3TIFF == '/'),
+        if( isempty(c.fluoCh3Map) ),
            % fprintf('no ch3 data\n');
            pixels = zeros(N,1);
             return;
