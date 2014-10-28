@@ -2,9 +2,10 @@ function main
     doPlot = 1;
     showPrompt = 1;
     
-    fprintf('Version 2\n');
+    fprintf('Version 3\n');
     
-    path = 'C:/Users/rt/Documents/Matthais/DATA/';
+    %path = 'C:/Users/rt/Documents/Matthais/DATA/';
+    path = '/Users/rtyson/Documents/Collaborations/Matthias/DATA/';
     avMicronsActin = 0.15;
     
     
@@ -66,6 +67,10 @@ function main
        o.rearPixels(:,2) = m_getPixels( c, 2, o.rearMask);  
        o.rearPixels(:,3) = m_getPixels( c, 3, o.rearMask); 
    
+       % test hack
+      % o.rearPixels = o.rearPixels(1:8,:);
+      % o.frontPixels = o.frontPixels(1:8,:);
+       
        writePixels(c, o);
        saveTiff( o.frontMask.*255, [c.PATH, 'z_' ,c.name, '_frontMask' ]);
        saveTiff( o.rearMask.*255, [c.PATH, 'z_' ,c.name, '_rearMask' ]);
@@ -128,18 +133,30 @@ function writePixels(c, o)
     fprintf( FID, '%d,%d,%d,%d,%d,%d\n\n', o.frontPixel(1),o.frontPixel(2),...
                o.rearPixel(1),o.rearPixel(2), o.centre(1), o.centre(2) );
 
-     fprintf( FID, 'Front pixels:\n');
-     fprintf( FID, 'ch1,ch2,ch3\n');
-     for i=1:size(o.frontPixels, 1)
-        fprintf( FID, '%d,', o.frontPixels(i, :));
+     fprintf( FID, 'Front pixels N=, %d', size(o.frontPixels,1) );
+     fprintf( FID, ', ,Rear pixels N=, %d\n', size(o.rearPixels,1) );
+     fprintf( FID, 'ch1,ch2,ch3,ch1,ch2,ch3\n');
+     
+     N = min( size(o.frontPixels,1), size(o.rearPixels,1) );
+     
+     % up to min
+     for i = 1:N
+         fprintf( FID, '%d,', o.frontPixels(i, :));
+         fprintf( FID, '%d,', o.rearPixels(i, :));
          fprintf( FID, '\n');
      end
-     
-     fprintf( FID, 'Rear pixels:\n');
-     fprintf( FID, 'ch1,ch2,ch3\n');
-     for i=1:size(o.rearPixels, 1)
-        fprintf( FID, '%d,', o.rearPixels(i, :));
-         fprintf( FID, '\n');
+        
+     if( size(o.frontPixels,1) < size(o.rearPixels,1)),
+        for i= (N+1):size(o.rearPixels, 1)
+            fprintf( FID, ', , ,');
+            fprintf( FID, '%d,', o.rearPixels(i, :));
+            fprintf( FID, '\n');
+        end
+     elseif( size(o.frontPixels,1) > size(o.rearPixels,1)),
+        for i= (N+1):size(o.frontPixels, 1)
+            fprintf( FID, '%d,', o.frontPixels(i, :));
+            fprintf( FID, '\n');
+        end
      end
      
      fclose(FID);
