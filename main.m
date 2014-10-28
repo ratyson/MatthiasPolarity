@@ -1,7 +1,7 @@
 function main
     doPlot = 1;
     showPrompt = 1;
-    
+    % compile command >> mcc -m main.m
     fprintf('Version 3\n');
     
     %path = 'C:/Users/rt/Documents/Matthais/DATA/';
